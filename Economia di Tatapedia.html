@@ -1,0 +1,630 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Economia di Tatapedia</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+  /* Foglio dei conti in colonna singola: leve in alto, il mese sotto, poi la scala. */
+  :root {
+    --bg: #fbfaf8;
+    --surface: #ffffff;
+    --surface-2: #f3f1ed;
+    --line: #e2ded7;
+    --line-strong: #cbc5bb;
+    --ink: #22201d;
+    --ink-2: #55514a;
+    --ink-3: #847e74;
+    --accent: #2f5fa8;
+    --accent-soft: #e8eef8;
+    --buono: #0b6b55;
+    --costo: #9d3f28;
+    --s1: #2f5fa8;
+    --s2: #0b8f72;
+    --s3: #b4621a;
+    --font-display: 'Spectral', Georgia, 'Times New Roman', serif;
+    --font-body: 'IBM Plex Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    --font-mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #17181a;
+      --surface: #1f2124;
+      --surface-2: #26282c;
+      --line: #32353a;
+      --line-strong: #4a4e55;
+      --ink: #eceae6;
+      --ink-2: #b4b0a9;
+      --ink-3: #83807a;
+      --accent: #7aa7e8;
+      --accent-soft: #1d2735;
+      --buono: #4fc4a4;
+      --costo: #e0866a;
+      --s1: #5e90d4;
+      --s2: #1ba583;
+      --s3: #bf7a2d;
+      color-scheme: dark;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #17181a;
+    --surface: #1f2124;
+    --surface-2: #26282c;
+    --line: #32353a;
+    --line-strong: #4a4e55;
+    --ink: #eceae6;
+    --ink-2: #b4b0a9;
+    --ink-3: #83807a;
+    --accent: #7aa7e8;
+    --accent-soft: #1d2735;
+    --buono: #4fc4a4;
+    --costo: #e0866a;
+    --s1: #5e90d4;
+    --s2: #1ba583;
+    --s3: #bf7a2d;
+    color-scheme: dark;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.55;
+    padding-inline: 16px;
+    padding-block: 40px 72px;
+  }
+  .wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 48px; }
+
+  h1, h2, h3 { font-family: var(--font-display); font-weight: 600; text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+  h1 { font-size: clamp(30px, 6vw, 44px); line-height: 1.08; }
+  h2 { font-size: clamp(21px, 3.6vw, 26px); line-height: 1.2; }
+  h3 { font-size: 17px; font-family: var(--font-body); font-weight: 600; letter-spacing: 0; }
+  p { margin: 0; max-width: 64ch; }
+  .eyebrow {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--ink-3); margin: 0;
+  }
+  .lede { font-size: 17px; color: var(--ink-2); max-width: 58ch; }
+  .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+
+  header { display: flex; flex-direction: column; gap: 14px; }
+
+  section { display: flex; flex-direction: column; gap: 18px; }
+  .sec-head { display: flex; flex-direction: column; gap: 6px; }
+
+  /* --- Leve --- */
+  .leve {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    padding: 20px; display: grid; gap: 22px 28px;
+    grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+  }
+  .leva { display: flex; flex-direction: column; gap: 7px; min-width: 0; }
+  .leva-top { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; }
+  .leva label { font-size: 13px; color: var(--ink-2); line-height: 1.3; }
+  .leva output { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 14px; font-weight: 500; color: var(--ink); white-space: nowrap; }
+  .leva .hint { font-size: 11.5px; color: var(--ink-3); line-height: 1.35; }
+  input[type="range"] { width: 100%; accent-color: var(--accent); margin: 0; }
+  input[type="range"]:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: 3px; }
+
+  /* --- Conto del mese --- */
+  .conto { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .riga {
+    display: grid; grid-template-columns: 1fr auto; gap: 6px 16px; align-items: baseline;
+    padding: 13px 18px; border-bottom: 1px solid var(--line);
+  }
+  .riga:last-child { border-bottom: 0; }
+  .riga .et { display: flex; align-items: baseline; gap: 9px; min-width: 0; }
+  .riga .et span { min-width: 0; }
+  .riga .sub { grid-column: 1 / -1; font-size: 12px; color: var(--ink-3); line-height: 1.4; }
+  .riga .imp { font-family: var(--font-mono); font-variant-numeric: tabular-nums; font-size: 15px; font-weight: 500; }
+  .pip { width: 9px; height: 9px; border-radius: 2px; flex: none; transform: translateY(-1px); }
+  .riga.costo .imp { color: var(--costo); }
+  .riga.totale { background: var(--surface-2); border-top: 1px solid var(--line-strong); }
+  .riga.totale .et { font-weight: 600; }
+  .riga.totale .imp { font-size: 20px; font-weight: 500; color: var(--buono); }
+  .riga.sommaria { background: var(--accent-soft); }
+  .riga.sommaria .imp { color: var(--ink); }
+
+  /* --- Una seduta --- */
+  .sedute { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+  .seduta { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 16px 18px; display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .seduta .tit { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+  .seduta .tit strong { font-size: 14px; font-weight: 600; }
+  .seduta .tit .q { font-family: var(--font-mono); font-size: 13px; color: var(--ink-3); }
+  .barra { display: flex; height: 26px; border-radius: 4px; overflow: hidden; gap: 2px; background: var(--surface-2); }
+  .barra div { min-width: 2px; }
+  .chiavi { display: flex; flex-direction: column; gap: 5px; }
+  .chiave { display: flex; align-items: baseline; gap: 8px; font-size: 12.5px; color: var(--ink-2); }
+  .chiave .imp { margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums; color: var(--ink); }
+  .seduta .nota { font-size: 12px; color: var(--ink-3); line-height: 1.45; }
+
+  /* --- Grafico --- */
+  .chart-box { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 18px 16px 12px; position: relative; }
+  .legenda { display: flex; flex-wrap: wrap; gap: 8px 18px; margin-bottom: 14px; }
+  .voce { display: flex; align-items: center; gap: 7px; font-size: 12.5px; color: var(--ink-2); }
+  .voce .dash { width: 16px; height: 0; border-top: 2px dashed var(--ink-2); }
+  svg { display: block; width: 100%; height: auto; overflow: visible; }
+  .tip {
+    position: absolute; pointer-events: none; z-index: 3; opacity: 0; transition: opacity .12s;
+    background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px;
+    padding: 9px 11px; font-size: 12px; box-shadow: 0 6px 20px rgba(0,0,0,.14); min-width: 170px;
+  }
+  .tip.on { opacity: 1; }
+  .tip b { display: block; font-size: 12.5px; margin-bottom: 6px; }
+  .tip .r { display: flex; align-items: baseline; gap: 8px; }
+  .tip .r span:last-child { margin-left: auto; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  .tip .r.tot { margin-top: 5px; padding-top: 5px; border-top: 1px solid var(--line); font-weight: 600; }
+
+  details { border: 1px solid var(--line); border-radius: 10px; background: var(--surface); }
+  summary { cursor: pointer; padding: 12px 16px; font-size: 13px; color: var(--ink-2); font-weight: 500; }
+  summary:focus-visible { outline: 2px solid var(--accent); outline-offset: -2px; border-radius: 9px; }
+  .tabellona { overflow-x: auto; padding: 0 16px 16px; }
+  table { border-collapse: collapse; font-size: 13px; width: 100%; min-width: 480px; }
+  th, td { text-align: right; padding: 7px 10px; border-bottom: 1px solid var(--line); white-space: nowrap; }
+  th:first-child, td:first-child { text-align: left; }
+  thead th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-3); font-weight: 600; }
+  tbody td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+  tbody td:first-child { font-family: var(--font-body); }
+
+  /* --- Problemi --- */
+  .problemi { display: flex; flex-direction: column; gap: 14px; }
+  .problema {
+    background: var(--surface); border: 1px solid var(--line); border-radius: 10px;
+    border-left: 3px solid var(--costo); padding: 16px 18px; display: flex; flex-direction: column; gap: 9px;
+  }
+  .problema .q { font-family: var(--font-mono); font-size: 12px; color: var(--ink-3); }
+  .problema p { font-size: 14px; color: var(--ink-2); }
+  .rimedio { font-size: 13.5px; color: var(--ink); background: var(--surface-2); border-radius: 7px; padding: 10px 12px; }
+  .rimedio strong { font-weight: 600; }
+
+  .chiusa { font-size: 14px; color: var(--ink-2); border-top: 1px solid var(--line); padding-top: 20px; }
+  .chiusa p + p { margin-top: 10px; }
+
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header>
+    <p class="eyebrow">Abbonamento + commissione · logopedia online</p>
+    <h1>Dove nasce il ricavo di Tatapedia</h1>
+    <p class="lede">
+      Due entrate: l&rsquo;abbonamento che paga il logopedista, e una percentuale su ogni seduta
+      pagata in app &mdash; 5% sui clienti suoi, 20% su quelli portati dalla piattaforma.
+      Qui sotto le leve sono mobili: il conto del mese si rifà mentre le muovi.
+    </p>
+  </header>
+
+  <section>
+    <div class="sec-head">
+      <h2>Le leve</h2>
+      <p class="lede" style="font-size:15px">
+        I valori di partenza sono quelli del progetto: tariffa di listino 45 &euro;, piano
+        Professionista 49 &euro;/mese, infrastruttura 40 &euro;/mese.
+      </p>
+    </div>
+    <div class="leve">
+      <div class="leva">
+        <div class="leva-top"><label for="l-logo">Logopedisti abbonati</label><output id="o-logo"></output></div>
+        <input type="range" id="l-logo" min="1" max="120" step="1" value="30">
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-abb">Abbonamento mensile</label><output id="o-abb"></output></div>
+        <input type="range" id="l-abb" min="0" max="150" step="1" value="49">
+        <span class="hint">49 &euro; sono 1,1 sedute: il logopedista rientra vendendone una in più al mese.</span>
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-anno">Chi sceglie l&rsquo;annuale</label><output id="o-anno"></output></div>
+        <input type="range" id="l-anno" min="0" max="100" step="5" value="20">
+        <span class="hint">Dieci mensilità invece di dodici: incassi prima e perdi meno abbonati per strada.</span>
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-tar">Tariffa di una seduta</label><output id="o-tar"></output></div>
+        <input type="range" id="l-tar" min="20" max="90" step="1" value="45">
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-att">Chi accende il pagamento in app per i clienti suoi</label><output id="o-att"></output></div>
+        <input type="range" id="l-att" min="0" max="100" step="5" value="35">
+        <span class="hint">È una sua scelta, non la nostra: senza il suo sì questa riga resta a zero.</span>
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-sp">Sedute online al mese, per chi l&rsquo;ha acceso</label><output id="o-sp"></output></div>
+        <input type="range" id="l-sp" min="0" max="80" step="2" value="24">
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-fam">Famiglie portate dalla piattaforma, per logopedista</label><output id="o-fam"></output></div>
+        <input type="range" id="l-fam" min="0" max="12" step="1" value="2">
+        <span class="hint">La leva che decide tutto: è l&rsquo;unica riga al 20%.</span>
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-sf">Sedute al mese per famiglia</label><output id="o-sf"></output></div>
+        <input type="range" id="l-sf" min="1" max="8" step="1" value="4">
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-on">Quota di sedute online</label><output id="o-on"></output></div>
+        <input type="range" id="l-on" min="0" max="100" step="5" value="75">
+        <span class="hint">Solo l&rsquo;online passa dalla piattaforma. Quello che si salda in studio non porta commissione.</span>
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-c1">Commissione sui clienti suoi</label><output id="o-c1"></output></div>
+        <input type="range" id="l-c1" min="0" max="25" step="1" value="5">
+      </div>
+      <div class="leva">
+        <div class="leva-top"><label for="l-c2">Commissione sui clienti della piattaforma</label><output id="o-c2"></output></div>
+        <input type="range" id="l-c2" min="0" max="40" step="1" value="20">
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Il conto del mese</h2>
+      <p class="lede" style="font-size:15px" id="sottotitolo-conto"></p>
+    </div>
+    <div class="conto" id="conto"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Dove vanno i soldi di una seduta</h2>
+      <p class="lede" style="font-size:15px">
+        La commissione lorda non è quella che resta. Stripe trattiene circa l&rsquo;1,5% più 25
+        centesimi per transazione, e quei 25 centesimi pesano sempre uguali: su una commissione
+        piccola si mangiano quasi tutto.
+      </p>
+    </div>
+    <div class="sedute" id="sedute"></div>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Quanto serve crescere</h2>
+      <p class="lede" style="font-size:15px">
+        I costi fissi sono 40 &euro; al mese, quindi il conto è in attivo da subito: il problema
+        non è il costo, è quanti logopedisti riesci a portare dentro. Le barre sono i ricavi lordi,
+        la linea tratteggiata è quello che resta pagati Stripe e infrastruttura.
+      </p>
+    </div>
+    <div class="chart-box">
+      <div class="legenda">
+        <div class="voce"><span class="pip" style="background:var(--s1)"></span>Abbonamenti</div>
+        <div class="voce"><span class="pip" style="background:var(--s2)"></span>Commissione clienti suoi</div>
+        <div class="voce"><span class="pip" style="background:var(--s3)"></span>Commissione clienti piattaforma</div>
+        <div class="voce"><span class="dash"></span>Margine netto</div>
+      </div>
+      <svg id="grafico" viewBox="0 0 760 320" role="img" aria-labelledby="g-tit"></svg>
+      <h3 id="g-tit" hidden>Ricavi mensili e margine netto al crescere dei logopedisti abbonati</h3>
+      <div class="tip" id="tip"></div>
+    </div>
+    <details>
+      <summary>Gli stessi numeri in tabella</summary>
+      <div class="tabellona"><table id="tabella"></table></div>
+    </details>
+  </section>
+
+  <section>
+    <div class="sec-head">
+      <h2>Tre cose che non tornano</h2>
+      <p class="lede" style="font-size:15px">
+        La struttura è giusta: una quota fissa che copre i costi e tiene il ricavo prevedibile,
+        più una variabile che cresce con il successo di chi la usa. Le due aliquote diverse sono
+        difendibili &mdash; sui clienti suoi vendi uno strumento, su quelli della piattaforma vendi
+        il cliente. Questi però sono i punti da sistemare prima di scrivere il listino.
+      </p>
+    </div>
+    <div class="problemi">
+      <div class="problema">
+        <p class="q" id="p1-q"></p>
+        <h3>Il 5% è quasi tutto commissione bancaria</h3>
+        <p>
+          Il costo fisso di Stripe non scala con l&rsquo;aliquota. Su una commissione da pochi euro
+          resta una moneta: è un ricavo che costa più in contabilità di quello che porta.
+        </p>
+        <div class="rimedio">
+          <strong>Rimedio.</strong> Tre strade, in ordine di semplicità: fare pagare la
+          commissione di transazione al logopedista (Stripe Connect lo permette), sostituire la
+          percentuale con una cifra fissa per seduta, oppure non prendere niente sui clienti suoi
+          e vendere il pagamento in app come funzione di un piano più alto. L&rsquo;ultima è la più
+          facile da spiegare: un prezzo al mese, nessun conteggio.
+        </div>
+      </div>
+      <div class="problema">
+        <p class="q">Il 5% lo decide lui, non tu</p>
+        <h3>Oggi accendere il pagamento in app gli conviene meno che non accenderlo</h3>
+        <p>
+          I suoi clienti pagano in app solo se lui attiva l&rsquo;interruttore. Attivandolo rinuncia
+          al 5% e &mdash; con l&rsquo;incasso che passa dalla piattaforma e torna col rendiconto
+          mensile &mdash; aspetta i soldi più di quanto aspetti oggi un bonifico. Nessuno paga per
+          stare peggio.
+        </p>
+        <div class="rimedio">
+          <strong>Rimedio.</strong> I soldi devono arrivare sul suo conto in pochi giorni, non col
+          rendiconto: conto collegato Stripe, accredito diretto. Allora il 5% compra due cose che
+          valgono più di 5%: non rincorrere più nessuno, e la ricevuta che si scrive da sé.
+        </div>
+      </div>
+      <div class="problema">
+        <p class="q">Il 20% si può aggirare</p>
+        <h3>Una famiglia portata dalla piattaforma, vista in studio, oggi non paga commissione</h3>
+        <p>
+          L&rsquo;interruttore &laquo;mi si può pagare in studio&raquo; azzera gli importi in app
+          sulle sedute in presenza, portata della famiglia compresa. Con il 20% in gioco diventa
+          una scorciatoia che si prende da sola.
+        </p>
+        <div class="rimedio">
+          <strong>Rimedio.</strong> Per le famiglie portate dalla piattaforma il pagamento in
+          studio resta chiuso: chi arriva da noi paga da noi, in studio o in videochiamata. E
+          valuta di scendere dal 20% al 10% dopo le prime dieci sedute: a quel punto il cliente è
+          suo per davvero, e l&rsquo;aliquota alta diventa un motivo per portarlo fuori.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="chiusa">
+    <p>
+      <strong>Una nota fiscale, da portare al commercialista e non a me.</strong> Se incassi tu
+      i 45 &euro; e ne trattieni una parte, stai maneggiando soldi di qualcun altro: la tua
+      commissione è un servizio al professionista e va con IVA, mentre la prestazione sanitaria
+      che lui fattura alla famiglia ne è esente. Chi emette quale documento va deciso prima del
+      primo incasso vero, non dopo.
+    </p>
+    <p>
+      Le commissioni di Stripe qui dentro sono quelle di listino per carte europee, 1,5% più 25
+      centesimi. Vanno riverificate: cambiano, e le carte extraeuropee costano il doppio.
+    </p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var eur0 = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 });
+  var eur2 = new Intl.NumberFormat('it-IT', { style: 'currency', currency: 'EUR', minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  var n0 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 0 });
+  var n1 = new Intl.NumberFormat('it-IT', { maximumFractionDigits: 1 });
+
+  var STRIPE_PERC = 0.015, STRIPE_FISSO = 0.25, INFRA = 40;
+
+  var ids = ['logo','abb','anno','tar','att','sp','fam','sf','on','c1','c2'];
+  var el = {};
+  ids.forEach(function (k) { el[k] = document.getElementById('l-' + k); el['o' + k] = document.getElementById('o-' + k); });
+
+  function leve() {
+    return {
+      logo: +el.logo.value, abb: +el.abb.value, anno: +el.anno.value / 100,
+      tar: +el.tar.value, att: +el.att.value / 100, sp: +el.sp.value,
+      fam: +el.fam.value, sf: +el.sf.value, on: +el.on.value / 100,
+      c1: +el.c1.value / 100, c2: +el.c2.value / 100
+    };
+  }
+
+  /** Il conto di un mese, dati i logopedisti e le leve. */
+  function conti(L, v) {
+    var abbonamenti = L * v.abb * (1 - v.anno + v.anno * 10 / 12);
+    var sedProprie = L * v.att * v.sp;
+    var volProprie = sedProprie * v.tar;
+    var commProprie = volProprie * v.c1;
+    var sedPiatt = L * v.fam * v.sf * v.on;
+    var volPiatt = sedPiatt * v.tar;
+    var commPiatt = volPiatt * v.c2;
+
+    var transazioni = sedProprie + sedPiatt;
+    var stripeSedute = transazioni * (v.tar * STRIPE_PERC + STRIPE_FISSO);
+    // Chi paga annuale viene addebitato una volta l'anno: un dodicesimo al mese.
+    var stripeAbb = L * (1 - v.anno) * (v.abb * STRIPE_PERC + STRIPE_FISSO)
+                  + L * v.anno / 12 * (v.abb * 10 * STRIPE_PERC + STRIPE_FISSO);
+
+    var lordo = abbonamenti + commProprie + commPiatt;
+    var costi = stripeSedute + stripeAbb + INFRA;
+    return {
+      L: L, abbonamenti: abbonamenti, commProprie: commProprie, commPiatt: commPiatt,
+      sedProprie: sedProprie, sedPiatt: sedPiatt, volProprie: volProprie, volPiatt: volPiatt,
+      transazioni: transazioni, stripe: stripeSedute + stripeAbb, costi: costi,
+      lordo: lordo, netto: lordo - costi
+    };
+  }
+
+  /* ---------- Conto del mese ---------- */
+  function riga(cls, pip, et, imp, sub) {
+    return '<div class="riga ' + (cls || '') + '">' +
+      '<div class="et">' + (pip ? '<span class="pip" style="background:' + pip + '"></span>' : '') + '<span>' + et + '</span></div>' +
+      '<div class="imp">' + imp + '</div>' +
+      (sub ? '<div class="sub">' + sub + '</div>' : '') + '</div>';
+  }
+
+  function disegnaConto(c, v) {
+    var attivi = v.logo * v.att;
+    document.getElementById('sottotitolo-conto').textContent =
+      'Con ' + n0.format(v.logo) + ' logopedisti abbonati, di cui ' + n1.format(attivi) +
+      ' fanno pagare in app anche i clienti propri.';
+
+    var h = '';
+    h += riga('', 'var(--s1)', 'Abbonamenti', eur0.format(c.abbonamenti),
+      n0.format(v.logo) + ' logopedisti · ' + eur0.format(v.abb) + ' al mese, ' +
+      n0.format(v.anno * 100) + '% sul piano annuale');
+    h += riga('', 'var(--s2)', 'Commissione ' + n0.format(v.c1 * 100) + '% &mdash; clienti suoi', eur0.format(c.commProprie),
+      n0.format(c.sedProprie) + ' sedute online · ' + eur0.format(c.volProprie) + ' transati');
+    h += riga('', 'var(--s3)', 'Commissione ' + n0.format(v.c2 * 100) + '% &mdash; clienti della piattaforma', eur0.format(c.commPiatt),
+      n0.format(c.sedPiatt) + ' sedute online · ' + eur0.format(c.volPiatt) + ' transati');
+    h += riga('sommaria', '', 'Ricavo lordo', eur0.format(c.lordo),
+      'Volume transato: ' + eur0.format(c.volProprie + c.volPiatt) + ' · ricavo per logopedista ' +
+      eur0.format(v.logo ? c.lordo / v.logo : 0));
+    h += riga('costo', '', 'Commissioni di transazione', '&minus;' + eur0.format(c.stripe),
+      n0.format(c.transazioni) + ' pagamenti di seduta più gli abbonamenti');
+    h += riga('costo', '', 'Infrastruttura', '&minus;' + eur0.format(INFRA),
+      'Supabase Pro e VPS: non cresce con i logopedisti');
+    h += riga('totale', '', 'Resta', eur0.format(c.netto),
+      eur0.format(c.netto * 12) + ' all&rsquo;anno a questo ritmo');
+    document.getElementById('conto').innerHTML = h;
+  }
+
+  /* ---------- Una seduta ---------- */
+  function cardSeduta(titolo, aliquota, v, nota) {
+    var lordo = v.tar * aliquota;
+    var stripe = Math.min(lordo, v.tar * STRIPE_PERC + STRIPE_FISSO);
+    var netto = lordo - stripe;
+    var logo = v.tar - lordo;
+    var q = lordo > 0 ? (netto / lordo * 100) : 0;
+    return '<div class="seduta">' +
+      '<div class="tit"><strong>' + titolo + '</strong><span class="q">' + n0.format(aliquota * 100) + '% su ' + eur0.format(v.tar) + '</span></div>' +
+      '<div class="barra" role="img" aria-label="Ripartizione di una seduta da ' + eur0.format(v.tar) + '">' +
+        '<div style="flex:' + logo + ';background:var(--line-strong)"></div>' +
+        '<div style="flex:' + netto + ';background:var(--accent)"></div>' +
+        '<div style="flex:' + stripe + ';background:var(--costo)"></div>' +
+      '</div>' +
+      '<div class="chiavi">' +
+        '<div class="chiave"><span class="pip" style="background:var(--line-strong)"></span>Al logopedista<span class="imp">' + eur2.format(logo) + '</span></div>' +
+        '<div class="chiave"><span class="pip" style="background:var(--accent)"></span>Resta a te<span class="imp">' + eur2.format(netto) + '</span></div>' +
+        '<div class="chiave"><span class="pip" style="background:var(--costo)"></span>Stripe<span class="imp">' + eur2.format(stripe) + '</span></div>' +
+      '</div>' +
+      '<p class="nota">Della commissione lorda te ne resta il <strong>' + n0.format(q) + '%</strong>. ' + nota + '</p>' +
+      '</div>';
+  }
+
+  function disegnaSedute(v) {
+    document.getElementById('sedute').innerHTML =
+      cardSeduta('Un cliente suo', v.c1, v,
+        'È la riga che non ripaga il lavoro di incassarla.') +
+      cardSeduta('Un cliente della piattaforma', v.c2, v,
+        'Qui il costo fisso di Stripe quasi non si sente: è questa la riga da far crescere.');
+  }
+
+  /* ---------- Grafico ---------- */
+  var SCALE = [5, 10, 20, 30, 50, 75, 100];
+  var tip = document.getElementById('tip');
+
+  function disegnaGrafico(v) {
+    var svg = document.getElementById('grafico');
+    var W = 760, H = 320, P = { t: 24, r: 14, b: 38, l: 58 };
+    var pw = W - P.l - P.r, ph = H - P.t - P.b;
+    var dati = SCALE.map(function (L) { return conti(L, v); });
+    var max = Math.max.apply(null, dati.map(function (d) { return d.lordo; }));
+    max = max > 0 ? max : 1;
+    // Tetto arrotondato verso l'alto, così l'ultima etichetta è un numero tondo.
+    var passo = Math.pow(10, Math.floor(Math.log10(max))) / 2;
+    var tetto = Math.ceil(max / passo) * passo;
+    var y = function (val) { return P.t + ph * (1 - val / tetto); };
+    var colW = pw / SCALE.length;
+    var barW = Math.min(44, colW * 0.5);
+
+    var s = '';
+    // Griglia e scala: quattro riferimenti, recessivi.
+    for (var i = 0; i <= 4; i++) {
+      var val = tetto * i / 4, yy = y(val);
+      s += '<line x1="' + P.l + '" x2="' + (W - P.r) + '" y1="' + yy.toFixed(1) + '" y2="' + yy.toFixed(1) +
+           '" stroke="var(--line)" stroke-width="1"' + (i === 0 ? '' : ' stroke-dasharray="2 5"') + '/>';
+      s += '<text x="' + (P.l - 10) + '" y="' + (yy + 4).toFixed(1) + '" text-anchor="end" fill="var(--ink-3)" ' +
+           'font-family="var(--font-mono)" font-size="11">' + (val >= 1000 ? n1.format(val / 1000) + 'k' : n0.format(val)) + '</text>';
+    }
+
+    dati.forEach(function (d, i) {
+      var cx = P.l + colW * (i + 0.5), x = cx - barW / 2;
+      var segmenti = [
+        { v: d.abbonamenti, c: 'var(--s1)' },
+        { v: d.commProprie, c: 'var(--s2)' },
+        { v: d.commPiatt, c: 'var(--s3)' }
+      ].filter(function (g) { return g.v > 0; });
+
+      var base = y(0);
+      segmenti.forEach(function (g, k) {
+        var alto = (g.v / tetto) * ph;
+        var gap = k === segmenti.length - 1 ? 0 : 2;   // 2px di respiro fra i segmenti
+        var h = Math.max(1, alto - gap);
+        var top = base - alto;
+        if (k === segmenti.length - 1) {
+          // Estremità del dato arrotondata; il piede resta appoggiato alla linea di zero.
+          var r = Math.min(4, h / 2);
+          s += '<path d="M' + x + ' ' + (top + h).toFixed(1) + ' V' + (top + r).toFixed(1) +
+               ' q0 -' + r + ' ' + r + ' -' + r + ' H' + (x + barW - r).toFixed(1) +
+               ' q' + r + ' 0 ' + r + ' ' + r + ' V' + (top + h).toFixed(1) + ' Z" fill="' + g.c + '"/>';
+        } else {
+          s += '<rect x="' + x + '" y="' + top.toFixed(1) + '" width="' + barW + '" height="' + h.toFixed(1) + '" fill="' + g.c + '"/>';
+        }
+        base = top;
+      });
+
+      s += '<text x="' + cx.toFixed(1) + '" y="' + (H - P.b + 18) + '" text-anchor="middle" fill="var(--ink-3)" ' +
+           'font-family="var(--font-mono)" font-size="11">' + d.L + '</text>';
+    });
+
+    // Margine netto: una linea sola, sopra le barre, nella stessa unità.
+    var punti = dati.map(function (d, i) {
+      return [P.l + colW * (i + 0.5), y(Math.max(0, d.netto))];
+    });
+    s += '<polyline points="' + punti.map(function (p) { return p[0].toFixed(1) + ',' + p[1].toFixed(1); }).join(' ') +
+         '" fill="none" stroke="var(--ink-2)" stroke-width="2" stroke-dasharray="6 4" stroke-linecap="round"/>';
+    punti.forEach(function (p) {
+      s += '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4.5" fill="var(--ink-2)" stroke="var(--surface)" stroke-width="2"/>';
+    });
+
+    s += '<text x="' + P.l + '" y="' + (H - 6) + '" fill="var(--ink-3)" font-size="11">logopedisti abbonati →</text>';
+
+    // Zone sensibili al passaggio: larghe quanto la colonna, non quanto la barra.
+    dati.forEach(function (d, i) {
+      s += '<rect class="hit" data-i="' + i + '" x="' + (P.l + colW * i).toFixed(1) + '" y="' + P.t +
+           '" width="' + colW.toFixed(1) + '" height="' + ph + '" fill="transparent" style="cursor:crosshair"/>';
+    });
+
+    svg.innerHTML = s;
+
+    Array.prototype.forEach.call(svg.querySelectorAll('.hit'), function (r) {
+      r.addEventListener('mouseenter', function () { mostraTip(dati[+r.dataset.i], r); });
+      r.addEventListener('mouseleave', function () { tip.classList.remove('on'); });
+    });
+
+    // Tabella equivalente, per chi non legge il grafico.
+    var t = '<thead><tr><th>Logopedisti</th><th>Abbonamenti</th><th>5% suoi</th><th>20% piattaforma</th><th>Lordo</th><th>Netto</th></tr></thead><tbody>';
+    dati.forEach(function (d) {
+      t += '<tr><td>' + d.L + '</td><td>' + eur0.format(d.abbonamenti) + '</td><td>' + eur0.format(d.commProprie) +
+           '</td><td>' + eur0.format(d.commPiatt) + '</td><td>' + eur0.format(d.lordo) + '</td><td>' + eur0.format(d.netto) + '</td></tr>';
+    });
+    document.getElementById('tabella').innerHTML = t + '</tbody>';
+  }
+
+  function mostraTip(d, rect) {
+    tip.innerHTML = '<b>' + d.L + ' logopedisti</b>' +
+      '<div class="r"><span class="pip" style="background:var(--s1)"></span><span>Abbonamenti</span><span>' + eur0.format(d.abbonamenti) + '</span></div>' +
+      '<div class="r"><span class="pip" style="background:var(--s2)"></span><span>Clienti suoi</span><span>' + eur0.format(d.commProprie) + '</span></div>' +
+      '<div class="r"><span class="pip" style="background:var(--s3)"></span><span>Piattaforma</span><span>' + eur0.format(d.commPiatt) + '</span></div>' +
+      '<div class="r tot"><span>Resta</span><span>' + eur0.format(d.netto) + '</span></div>';
+    var box = rect.ownerSVGElement.getBoundingClientRect();
+    var r = rect.getBoundingClientRect();
+    var cx = r.left + r.width / 2 - box.left;
+    tip.classList.add('on');
+    var w = tip.offsetWidth;
+    var left = Math.max(4, Math.min(box.width - w - 4, cx - w / 2));
+    tip.style.left = (left + 16) + 'px';
+    tip.style.top = '34px';
+  }
+
+  /* ---------- Giro completo ---------- */
+  function aggiorna() {
+    var v = leve();
+    el.ologo.textContent = n0.format(v.logo);
+    el.oabb.textContent = eur0.format(v.abb);
+    el.oanno.textContent = n0.format(v.anno * 100) + '%';
+    el.otar.textContent = eur0.format(v.tar);
+    el.oatt.textContent = n0.format(v.att * 100) + '%';
+    el.osp.textContent = n0.format(v.sp);
+    el.ofam.textContent = n0.format(v.fam);
+    el.osf.textContent = n0.format(v.sf);
+    el.oon.textContent = n0.format(v.on * 100) + '%';
+    el.oc1.textContent = n0.format(v.c1 * 100) + '%';
+    el.oc2.textContent = n0.format(v.c2 * 100) + '%';
+
+    var c = conti(v.logo, v);
+    disegnaConto(c, v);
+    disegnaSedute(v);
+    disegnaGrafico(v);
+
+    var lordo5 = v.tar * v.c1;
+    var stripe1 = v.tar * STRIPE_PERC + STRIPE_FISSO;
+    document.getElementById('p1-q').textContent = lordo5 > 0
+      ? 'Di ' + eur2.format(lordo5) + ' lordi te ne restano ' + eur2.format(Math.max(0, lordo5 - stripe1))
+      : 'Nessuna commissione sui clienti suoi';
+  }
+
+  ids.forEach(function (k) { el[k].addEventListener('input', aggiorna); });
+  window.addEventListener('resize', function () { tip.classList.remove('on'); });
+  aggiorna();
+})();
+</script>
+
+</body></html>
